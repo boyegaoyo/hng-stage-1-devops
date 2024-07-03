@@ -26,18 +26,18 @@ create_user() {
     if id "$username" &>/dev/null; then
         log_message "User $username already exists. Ensuring group memberships are correct."  # Logs user existence
 
-        # Split groups by commas and add each group
+        # Loop through each group, check existence, and add user
         for group in "${groups//,/ }"; do
-            if ! getent group "$group" > /dev/null; then
-                sudo groupadd "$group"  # Creates group if it doesn't exist
-                log_message "Group $group created."  # Logs group creation
-            fi
-            sudo usermod -a -G "$group" "$username"  # Adds user to group
-            if [ $? -eq 0 ]; then
-                log_message "User $username added to group $group."  # Logs user added to group
-            else
-                log_message "Failed to add user $username to group $group."  # Logs failure to add user to group
-            fi
+          if ! getent group "$group" > /dev/null; then
+            sudo groupadd "$group"  # Creates group if it doesn't exist
+            log_message "Group $group created."  # Logs group creation
+          fi
+          sudo usermod -a -G "$group" "$username" # Add user to the group
+          if [ $? -eq 0 ]; then
+            log_message "User $username added to group $group."  # Logs user added to group
+          else
+            log_message "Failed to add user $username to group $group."  # Logs failure to add user to group
+          fi
         done
     else
         # User does not exist, create user with specified groups
